@@ -85,16 +85,13 @@ class ProductController extends Controller
     public function update(ProductRequest $request, Product $product)
     {
         $product->update($request->except(['download']));
-
-        if ($request->has('name')) {
+        
+        if ($request->has('name') && !$product->downloads->contains($request->download['id'])) {
             
-            foreach($product->downloads() as $download){
-
-                if($download){
-                    
-                    if(! \Storage::disk('public')->delete($download->path)) {
-                        return;
-                    }
+            foreach($product->downloads as $download){
+    
+                if(! \Storage::disk('public')->delete($download->path)) {
+                    return;
                 }
             }
             $product->downloads()->detach();
@@ -115,15 +112,11 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-
-        foreach($product->downloads() as $download){
-            
-            if($download){
-                
-                if(! \Storage::disk('public')->delete($download->path)) {
-                    return;
-                }    
-            }
+        foreach($product->downloads as $download){
+               
+            if(! \Storage::disk('public')->delete($download->path)) {
+                return;
+            }    
         }
         
         $product->downloads()->detach();

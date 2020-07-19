@@ -5,9 +5,9 @@
 <div class="container">
 
     @component('components.breadcrumb')
-        @slot('title') Редактирование новости @endslot
+        @slot('title') Редактирование товара @endslot
         @slot('parent') Главная @endslot
-        @slot('active') Новости @endslot
+        @slot('active') Товары @endslot
     @endcomponent
 
     <hr />
@@ -17,6 +17,7 @@
         :index-path="'{{ route('product.index') }}'"
         :product-fields="{{ $product }}"
         :downloads="{{ $product->downloads ?? '' }}"
+        :method="'put'"
     >
     </product-create>
 </div>

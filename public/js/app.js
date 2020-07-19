@@ -2031,13 +2031,11 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 //
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-  props: ['path', 'productFields', 'indexPath', 'downloads'],
+  props: ['path', 'productFields', 'indexPath', 'downloads', 'method'],
   data: function data() {
     return {
       fields: !!this.productFields ? this.productFields : {},
-      download: {
-        id: 0
-      },
+      download: {},
       errors: {},
       loading: false,
       success: false,
@@ -2056,9 +2054,20 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     };
   },
   mounted: function mounted() {
-    if (!!this.downloads[0]) {
-      this.download.id = this.downloads[0].id;
-      this.imageUrl = '/storage/' + this.downloads[0].path;
+    if (!!this.downloads) {
+      if (this.downloads.length) {
+        this.download.id = this.downloads[0].id;
+        this.imageUrl = '/storage/' + this.downloads[0].path;
+      }
+    }
+  },
+  computed: {
+    request: function request() {
+      if (this.method == 'put') {
+        return axios.put;
+      } else {
+        return axios.post;
+      }
     }
   },
   components: {
@@ -2073,6 +2082,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         if (response.data.result) {
           _this.imageUrl = null;
           _this.$refs.fileinput.value = '';
+          _this.download = {};
         }
       });
     },
@@ -2140,7 +2150,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       var _this3 = this;
 
       this.fields.download = this.download;
-      axios.post(this.path, this.fields).then(function (response) {
+      this.request(this.path, this.fields).then(function (response) {
         if (response.data.id > 0) {
           location.href = _this3.indexPath;
           /*this.success = true;
@@ -38751,19 +38761,6 @@ var render = function() {
                       }
                     }),
                     _vm._v(" "),
-                    _c("canvas", {
-                      directives: [
-                        {
-                          name: "show",
-                          rawName: "v-show",
-                          value: false,
-                          expression: "false"
-                        }
-                      ],
-                      ref: "canvas",
-                      attrs: { width: _vm.width, height: _vm.height }
-                    }),
-                    _vm._v(" "),
                     _c("input", {
                       directives: [
                         {
@@ -38799,7 +38796,13 @@ var render = function() {
                         staticClass: "alert alert-danger"
                       },
                       [_vm._v(_vm._s(_vm.errorMsg))]
-                    )
+                    ),
+                    _vm._v(" "),
+                    _vm.errors && _vm.errors.download
+                      ? _c("div", { staticClass: "alert alert-danger" }, [
+                          _vm._v(_vm._s(_vm.errors.download[0]))
+                        ])
+                      : _vm._e()
                   ])
                 ]
               )

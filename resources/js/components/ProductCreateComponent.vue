@@ -50,9 +50,9 @@
 				            </div>
 
 		            		<input type="file" v-show="false" @change.prevent="onChange" ref="fileinput">
-		            		<canvas v-show="false" :width="width" :height="height" ref="canvas"></canvas>
 							<input type="hidden" name="download" v-model="download.id">
 							<div class="alert alert-danger" v-show="hasError">{{ errorMsg }}</div>
+                            <div class="alert alert-danger" v-if="errors && errors.download">{{ errors.download[0] }}</div>
 						</div>
 						
 				    </div>
@@ -67,11 +67,11 @@
 <script>
 	import { Drag, Drop } from 'vue-drag-drop';
 	export default {
-		props: ['path', 'productFields', 'indexPath', 'downloads'],
+		props: ['path', 'productFields', 'indexPath', 'downloads', 'method'],
 		data() {
 			return {
 				fields: !!this.productFields ? this.productFields : {},
-				download: {id: 0},
+				download: {},
 				errors: {},
 				loading: false,
 				success: false,
@@ -90,11 +90,24 @@
 			}
 		},
 		mounted() {
-			if(!!this.downloads[0]){
-				this.download.id = this.downloads[0].id;
-				this.imageUrl = '/storage/'+this.downloads[0].path;
+            
+			if(!!this.downloads){
+				if(this.downloads.length){
+                    this.download.id = this.downloads[0].id;
+                    this.imageUrl = '/storage/'+this.downloads[0].path;
+                }
 			}
 		},
+        computed: {
+            request(){
+                if(this.method == 'put'){
+                    return axios.put;
+                }
+                else{
+                    return axios.post;
+                }
+            }
+        },
 		components: { Drag, Drop},
 		methods: {
 			deleteFile(){
@@ -103,6 +116,7 @@
 					if(response.data.result){
 						this.imageUrl = null;
 						this.$refs.fileinput.value = '';
+                        this.download = {};
 					}
 				})
 			},
@@ -157,8 +171,8 @@
 			onSubmit(){
 				
 				this.fields.download = this.download;
-
-				axios.post(this.path, this.fields)
+                
+				this.request(this.path, this.fields)
 	            .then(response => {
 	            	if(response.data.id > 0){
 
